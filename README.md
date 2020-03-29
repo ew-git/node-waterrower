@@ -12,7 +12,7 @@ var waterrower = require("./Waterrower");
 
 var readWaterrower = function() {
   console.log();
-  console.log("Stroke Rate ....." + waterrower.readStrokeCount());  // [ - ]
+  console.log("Stroke Count ....." + waterrower.readStrokeCount());  // [ - ]
   console.log("Total Speed ....." + waterrower.readTotalSpeed());   // [cm/s]
   console.log("Average Speed ..." + waterrower.readAverageSpeed()); // [cm/s]
   console.log("Distance... ....." + waterrower.readDistance());     // [ m ]
@@ -32,15 +32,15 @@ In the Waterrower module index.js file change debug to true. Restarting your pro
 var debug = true;
 
 Output:
-$ node index.js 
+$ node index.js
 in readWrite closed call open
 Number of ports=3
 com name /dev/cu.Bluetooth-Incoming-Port
-port ID 
+port ID
 com name /dev/cu.Bluetooth-Modem
-port ID 
+port ID
 com name /dev/cu.usbserial-A800etv2
-port ID 
+port ID
 in readWrite open call read
 in read connecting to /dev/cu.usbserial-A800etv2
 Stroke Rate ....................0
@@ -50,4 +50,20 @@ Distance... ....................0
 Heart Rate .....................0
 in readWrite connecting
 in read open
+```
+
+On some platforms, such as Ubuntu, the user may not have access to the serial
+device. On Ubuntu, add the user to the `dialout` group, as described in
+https://askubuntu.com/a/522776
+```
+sudo usermod -a -G dialout $USER
+sudo reboot
+```
+Verify the user is added with `id -Gn`.
+
+The following `/dev/` devices are searched for the following strings:
+```
+ttyACM
+cu.usbserial
+u.usbmodem
 ```
