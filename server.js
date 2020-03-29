@@ -12,8 +12,8 @@ app.get('/', function(req, res) {
 });
 
 app.get('/test', function (req, res) {
-  var results = {"distance": Number(waterrower.readDistance()),
-		 "stroke": Number(waterrower.readStrokeCount())};
+  var results = {"distance": Number(waterrower.readTotalDistance()),
+		 "stroke": Number(waterrower.readStrokeRate())};
   //var results = {"distance": 500, "stroke": 25};
   res.send(results);
 })
@@ -33,9 +33,8 @@ var readWaterrower = function() {
 //readWaterrower();
 
 function serverTest(){
-    console.log("Distance... ....." + waterrower.readDistance()); 
+    console.log("Distance... ....." + waterrower.readDistance());
     setTimeout(serverTest, 1000);
 }
 
 //serverTest();
-

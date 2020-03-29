@@ -14,13 +14,17 @@ var type = process.env.TYPE || 'wr5';
 var debug = process.env.DEBUG?console.log:function(){};
 var state = 'closed'
 // State of the USB Serial connection
-var READ_RATE = 200;// frequency at which we query the S4/S5 in ms
+var READ_RATE = 800;// frequency at which we query the S4/S5 in ms
 var BAUD_RATE = 19200;// baud rate of the S4/S5 com port connection
 
 console.log(process.env.DEBUG)
 
 exports.readStrokeCount = function(callback) { //TODO: async callback with (err, value) arguments
 return values["STROKE_COUNT"];
+}
+
+exports.readStrokeRate = function(callback) { //TODO: async callback with (err, value) arguments
+return values["STROKE_RATE"];
 }
 
 exports.readTotalSpeed = function(callback) { //TODO: async callback with (err, value) arguments
@@ -35,11 +39,13 @@ exports.readDistance = function(callback) { //TODO: async callback with (err, va
 return values["DISTANCE"];
 }
 
+exports.readTotalDistance = function(callback) { //TODO: async callback with (err, value) arguments
+return values["TOTAL_DIST"];
+}
+
 exports.readHeartRate = function(callback) { //TODO: async callback with (err, value) arguments
 return values["HEARTRATE"];
 }
-
-
 
 var getState = function() {
   return (state);
@@ -75,7 +81,7 @@ var getPort = function() {
     ports.forEach(function(port) {
       debug("com name " + port.path);
       debug("port ID " + port.pnpId);
-      // Check for Ubuntu (ttyACM)
+      // On Ubuntu, the S4 shows up as /dev/ttyACM0
       if (ports[i].path.includes("ttyACM") ||
           ports[i].path.includes("cu.usbserial") ||
           ports[i].path.includes("u.usbmodem")) {
@@ -206,21 +212,25 @@ var arduino ={
 	"IDS1A0":{"response":"HEARTRATE","next":"IDS14010"}
 	};
 
-
+// See https://github.com/codefoster/waterrower/blob/master/src/datapoints.ts
 var wr5 ={
 	"_WR_":{"response":"CONNECTED","next":"IRD140"},
-	"IDD140":{"response":"STROKE_COUNT","next":"IRD148"},
+	"IDD140":{"response":"STROKE_COUNT","next":"IRS1A9"},
+  "IDS1A9":{"response":"STROKE_RATE","next":"IRD148"},
 	"IDD148":{"response":"TOTAL_SPEED","next":"IRD14A"},
 	"IDD14A":{"response":"AVERAGE_SPEED","next":"IRD057"},
-	"IDD057":{"response":"DISTANCE","next":"IRS1A0"},
+	"IDD057":{"response":"DISTANCE","next":"IRD081"},
+  "IDD081":{"response":"TOTAL_DIST","next":"IRS1A0"},
 	"IDS1A0":{"response":"HEARTRATE","next":"IRD140"},
 	"AKR":{"response":"RESET","next":"IRD140"}
 	};
 
 values["STROKE_COUNT"] = 0;
+values["STROKE_RATE"] = 0;
 values["TOTAL_SPEED"] = 0;
 values["AVERAGE_SPEED"] = 0;
 values["DISTANCE"] = 0;
+values["TOTAL_DIST"] = 0;
 values["HEARTRATE"] = 0;
 
 var readMessage = function(message) {
