@@ -103,6 +103,46 @@
     function loadSession() {
       var sessionid = document.getElementById('sessionid').value;
       console.log('Loading session: ', sessionid);
+      var oldStore = localStorage.getItem('rowingStore');
+      if (oldStore === null){
+        console.log('No stored sessions.');
+      } else {
+        var oldStoreParsed = JSON.parse(oldStore);
+        var i;
+        var found = false;
+        for (i = 0; i < oldStoreParsed.length; i++) {
+          if (oldStoreParsed[i].id.toString() == sessionid){
+            found = true;
+            //set all the global arrays
+            distances = oldStoreParsed[i].data.distance;
+            strokes = oldStoreParsed[i].data.strokerate;
+            split500s = oldStoreParsed[i].data.split500;
+            speeds = oldStoreParsed[i].data.speed;
+            timestamps = oldStoreParsed[i].data.time;//actually strings
+            function stringtotime(item, index, arr){
+              arr[index] = new Date(Date.parse(item));
+            }
+            timestamps.forEach(stringtotime);
+            //update subplots
+            var update = {
+              x: [
+                timestamps,
+                timestamps,
+                timestamps
+              ],
+              y: [
+                distances,
+                strokes,
+                split500s
+              ]
+            }
+            Plotly.update('graph', update, {}, [0, 1, 2])
+          };
+        }
+        if (!found){
+          console.log('Session id not found.');
+        }
+      }
     }
 
     const startbtn = document.getElementById('startbtn');
@@ -113,7 +153,7 @@
 
     function tracking() {
       if (!tracked) {
-        tracked = window.setInterval(runTest, 1000);
+        tracked = window.setInterval(runTest, 300);
         startbtn.innerHTML = "STOP tracking";
         startbtn.style.backgroundColor = '#fc1134';
       } else {

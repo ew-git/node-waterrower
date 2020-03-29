@@ -14,7 +14,7 @@ var type = process.env.TYPE || 'wr5';
 var debug = process.env.DEBUG?console.log:function(){};
 var state = 'closed'
 // State of the USB Serial connection
-var READ_RATE = 800;// frequency at which we query the S4/S5 in ms
+var READ_RATE = 100;// frequency at which we query the S4/S5 in ms
 var BAUD_RATE = 19200;// baud rate of the S4/S5 com port connection
 
 console.log(process.env.DEBUG)
