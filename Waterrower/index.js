@@ -1,9 +1,11 @@
-"use strict"; 
+"use strict";
 
 // Read Waterrower
 //
 // Initialise
 var com = require("serialport");
+const Readline = com.parsers.Readline;
+const parser = new Readline('\n');
 var response = {device:'unknown', connected:false};
 var values = [];
 var conn;
@@ -12,7 +14,7 @@ var type = process.env.TYPE || 'wr5';
 var debug = process.env.DEBUG?console.log:function(){};
 var state = 'closed'
 // State of the USB Serial connection
-var READ_RATE = 800;// frequency at which we query the S4/S5 in ms
+var READ_RATE = 200;// frequency at which we query the S4/S5 in ms
 var BAUD_RATE = 19200;// baud rate of the S4/S5 com port connection
 
 console.log(process.env.DEBUG)
@@ -68,12 +70,17 @@ var getPort = function() {
   var ports;
   var i = 0;
   portname = "NULL";
-  com.list(function (err, ports) {
+  com.list().then(ports => {
     debug("Number of ports=" + ports.length);
-    ports.forEach(function(port) {  
-      debug("com name " + port.comName);
+    ports.forEach(function(port) {
+      debug("com name " + port.path);
       debug("port ID " + port.pnpId);
-      portname = ports[i].comName;
+      // Check for Ubuntu (ttyACM)
+      if (ports[i].path.includes("ttyACM") ||
+          ports[i].path.includes("cu.usbserial") ||
+          ports[i].path.includes("u.usbmodem")) {
+        portname = ports[i].path;
+      }
       i++;
     });
   });
@@ -126,9 +133,9 @@ var read = function(callback) { // this should be 'setup'
 
       debug("in read connecting to " + portname);
       state = "connecting";
-	  conn = new com.SerialPort(portname, {
-	    baudrate: BAUD_RATE, disconnectedCallback:function () { callback("disconnected") },
-	    parser: com.parsers.readline("\n")
+	  conn = new com(portname, {
+	    baudRate: BAUD_RATE, disconnectedCallback:function () { callback("disconnected") },
+	    parser: parser
 	  });
 	  conn.on("error", function(err) {
 	    debug("in read " + err);
@@ -147,16 +154,16 @@ var read = function(callback) { // this should be 'setup'
 	    callback("");
 	  });
 	  conn.on("data", function(data) {
-	    debug('in read>' + data.trim() + "<");
+	    debug('in read>' + data.toString().trim() + "<");
 	    state = "read";
-	    if (data.substring(0,1) == "P") {
+	    if (data.toString().substring(0,1) == "P") {
 	      data = "PULSE";
 	    }
-	    else if (data.substring(0,1) == "S") {
+	    else if (data.toString().substring(0,1) == "S") {
 	      data = "STROKE";
 	    }
 	    else {
-	      data = data.trim();
+	      data = data.toString().trim();
 	    }
 	    switch (data) {
 	      case "PING":
@@ -184,7 +191,7 @@ var write = function(buffer) {
       console.log("In write " + err);
       state = "error";
       return (state);
-    }   
+    }
   });
 }
 
@@ -314,4 +321,3 @@ function ACHtoDecimalReverse(input) {
 	}
 	return (total);
 }
-
