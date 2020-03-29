@@ -12,6 +12,10 @@
 
   <div id="graph"></div>
 
+  <form>
+    <input type="text" id="sessionid">
+  </form>
+  <button id="sessionbtn">LOAD session</button>
   <button id="listbtn">LIST sessions</button>
   <p id="listofsessions">No sessions loaded</p>
 
@@ -85,12 +89,19 @@
         function getids(item, index) {
           var date = new Date(Number(item.id));
           document.getElementById('listofsessions').innerHTML += item.id + ", ";
-          document.getElementById('listofsessions').innerHTML += date.toString();
+          document.getElementById('listofsessions').innerHTML += date.toString() + ", ";
+          document.getElementById('listofsessions').innerHTML += item.data.distance[item.data.distance.length - 1]
           document.getElementById('listofsessions').innerHTML += "<br/>";
-          console.log(item.id, date.toString());
         }
         oldStoreParsed.forEach(getids);
       }
+    }
+
+    const sessionbtn = document.getElementById('sessionbtn');
+    sessionbtn.onclick = loadSession;
+    function loadSession() {
+      var sessionid = document.getElementById('sessionid').value;
+      console.log('Loading session: ', sessionid);
     }
 
     const startbtn = document.getElementById('startbtn');
