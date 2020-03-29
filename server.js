@@ -13,8 +13,13 @@ app.get('/', function(req, res) {
 
 app.get('/test', function (req, res) {
   var results = {"distance": Number(waterrower.readTotalDistance()),
-		 "stroke": Number(waterrower.readStrokeRate())};
-  //var results = {"distance": 500, "stroke": 25};
+		 "stroke": Number(waterrower.readStrokeRate()),
+     "speed": Number(waterrower.readAverageSpeed())/100};//convert to m/s
+  if (results.speed < 1){//slower than 1 m/s, or roughly 8 minute 500m split
+    results.split500 = 0;
+  } else {
+    results.split500 = 500/results.speed;//split in seconds
+  }
   res.send(results);
 })
 app.listen(3000, () => console.log('Express app listening on port 3000!'))
@@ -38,3 +43,9 @@ function serverTest(){
 }
 
 //serverTest();
+
+/*
+setInterval(function() {console.log("Speed in cm/s",
+Number(waterrower.readAverageSpeed()));},
+  1000);
+*/

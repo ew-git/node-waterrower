@@ -8,12 +8,18 @@
 <body>
   <h1>Rowing Statistics</h1>
   <button id="startbtn">START tracking</button>
+  <button id="savebtn">SAVE current view</button>
 
   <div id="graph"></div>
+
+  <button id="listbtn">LIST sessions</button>
+  <p id="listofsessions">No sessions loaded</p>
 
   <script>
     var distances = [];
     var strokes = [];
+    var split500s = [];
+    var speeds = [];
     var timestamps = [];
 
     function runTest() {
@@ -22,22 +28,70 @@
       }).then(function(data) {
         distances.push(Number(data["distance"]));
         strokes.push(Number(data["stroke"]));
+        split500s.push(Number(data["split500"]));
+        speeds.push(Number(data["speed"]));
         var time = new Date();
         timestamps.push(time);
         var update = {
           x: [
             [time],
+            [time],
             [time]
           ],
           y: [
             [data["distance"]],
-            [data["stroke"]]
+            [data["stroke"]],
+            [data["split500"]]
           ]
         }
-        Plotly.extendTraces('graph', update, [0, 1])
+        Plotly.extendTraces('graph', update, [0, 1, 2])
       });
     }
 
+    const savebtn = document.getElementById('savebtn');
+    savebtn.onclick = saveCurrent;
+
+    function saveCurrent(){
+      var d = new Date().getTime();
+      var currentData = {'id': d.toString(),
+       'data': {'time': timestamps,
+                'distance': distances,
+                'strokerate': strokes,
+                'split500': split500s,
+                'speed': speeds}
+        };
+      var oldStore = localStorage.getItem('rowingStore');
+      if (oldStore === null){
+        //Create for the first time
+        var rowingStore = [currentData];
+        localStorage.setItem('rowingStore', JSON.stringify(rowingStore));
+      } else {
+        //Append to new data
+        var oldStoreParsed = JSON.parse(oldStore);
+        oldStoreParsed.push(currentData);
+        localStorage.setItem('rowingStore', JSON.stringify(oldStoreParsed));
+      }
+    }
+
+    const listbtn = document.getElementById('listbtn');
+    listbtn.onclick = listCurrent;
+    function listCurrent() {
+      var oldStore = localStorage.getItem('rowingStore');
+      if (oldStore === null){
+        document.getElementById('listofsessions').innerHTML('No stored sessions.');
+      } else {
+        var oldStoreParsed = JSON.parse(oldStore);
+        document.getElementById('listofsessions').innerHTML = '';
+        function getids(item, index) {
+          var date = new Date(Number(item.id));
+          document.getElementById('listofsessions').innerHTML += item.id + ", ";
+          document.getElementById('listofsessions').innerHTML += date.toString();
+          document.getElementById('listofsessions').innerHTML += "<br/>";
+          console.log(item.id, date.toString());
+        }
+        oldStoreParsed.forEach(getids);
+      }
+    }
 
     const startbtn = document.getElementById('startbtn');
     startbtn.onclick = tracking;
@@ -66,19 +120,31 @@
       mode: 'lines',
       line: {
         color: '#80CAF6',
-        shape: 'spline'
+        shape: 'lines'
       }
     };
 
     var trace2 = {
-      name: 'Number of Strokes',
+      name: 'Stroke Rate (spm)',
       x: [],
       y: [],
-      xaxis: 'x2',
+      xaxis: 'x3',
       yaxis: 'y2',
       mode: 'lines',
       line: {
         color: '#DF56F1'
+      }
+    };
+
+    var trace3 = {
+      name: '500m Split (s)',
+      x: [],
+      y: [],
+      xaxis: 'x3',
+      yaxis: 'y3',
+      mode: 'lines',
+      line: {
+        color: '#E5A51B'
       }
     };
 
@@ -92,7 +158,7 @@
         showticklabels: false
       },
       yaxis: {
-        domain: [0.52, 1]
+        domain: [0.8, 1]
       },
       xaxis2: {
         type: 'date',
@@ -104,11 +170,23 @@
       },
       yaxis2: {
         anchor: 'x2',
-        domain: [0, 0.48]
+        domain: [0.4, 0.75]
+      },
+      xaxis3: {
+        type: 'date',
+        anchor: 'y3',
+        domain: [0, 1],
+        title: {
+          text: 'Time'
+        },
+      },
+      yaxis3: {
+        anchor: 'x3',
+        domain: [0, 0.35]
       },
     };
 
-    var data = [trace1, trace2];
+    var data = [trace1, trace2, trace3];
 
     Plotly.plot('graph', data, layout);
   </script>
