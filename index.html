@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+<h1>Rowing Statistics</h1>
+<button id="startbtn">START tracking</button>
+
+<div id="graph"></div>
+
+<script>
+var distances = [];
+var strokes = [];
+var timestamps = [];
+
+function runTest() {
+    fetch("/test").then(function(response) {
+    return response.json();
+  }).then(function(data) {
+    distances.push(Number(data["distance"]));
+    strokes.push(Number(data["stroke"]));
+    var time = new Date();
+    timestamps.push(time);
+    var update = {
+        x: [[time], [time]],
+        y: [[data["distance"]], [data["stroke"]]]
+    }
+    Plotly.extendTraces('graph', update, [0,1])
+    });
+}
+
+
+const startbtn = document.getElementById('startbtn');
+startbtn.onclick = tracking;
+startbtn.style.backgroundColor='#1ae028';
+
+var tracked = false;
+function tracking() {
+    if (!tracked) {
+        tracked = window.setInterval(runTest,1000);
+	startbtn.innerHTML = "STOP tracking";
+	startbtn.style.backgroundColor='#fc1134';
+    } else {
+        window.clearInterval(tracked);
+        tracked = null;
+	startbtn.innerHTML = "START tracking";
+	startbtn.style.backgroundColor='#1ae028';
+    }
+}
+
+//https://plot.ly/javascript/streaming/#streaming-subplots
+var trace1 = {
+  name: 'Distance (m)',
+  x: [],
+  y: [],
+  mode: 'lines',
+  line: {
+    color: '#80CAF6',
+    shape: 'spline'
+  }
+};
+
+var trace2 = {
+  name: 'Number of Strokes',
+  x: [],
+  y: [],
+  xaxis: 'x2',
+  yaxis: 'y2',
+  mode: 'lines',
+  line: {color: '#DF56F1'}
+};
+
+var layout = {
+  autosize: false,
+  width: 1000,
+  height: 800,
+  xaxis: {
+    type: 'date', 
+    domain: [0, 1],
+    showticklabels: false
+  },
+  yaxis: {domain: [0.52,1]},
+  xaxis2: {
+    type: 'date', 
+    anchor: 'y2', 
+    domain: [0, 1],
+    title: {text: 'Time'},
+  },
+  yaxis2: {
+    anchor: 'x2', 
+    domain: [0, 0.48]},  
+};
+
+var data = [trace1,trace2]; 
+
+Plotly.plot('graph', data, layout);
+</script>
+</body>
+</html>
