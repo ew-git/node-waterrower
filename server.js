@@ -13,7 +13,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/test', function (req, res) {
-  var results = {"distance": Number(waterrower.readDistance()),
+  var results = {"distance": Number(waterrower.readTotalDistance()),
 		 "stroke": Number(waterrower.readStrokeRate()),
      "speed": Number(waterrower.readAverageSpeed())/100};//convert to m/s
   if (results.speed < 1){//slower than 1 m/s, or roughly 8 minute 500m split
