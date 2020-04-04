@@ -6,7 +6,7 @@
 </head>
 
 <body>
-  <h1>Rowing Statistics</h1>
+  <h1 id="splitheading">0m 0s</h1>
   <button id="startbtn">START tracking</button>
   <button id="savebtn">SAVE current view</button>
 
@@ -20,6 +20,8 @@
   <p id="listofsessions">No sessions loaded</p>
 
   <script>
+document.getElementById("splitheading").style.fontSize = "600%";
+
     var distances = [];
     var strokes = [];
     var split500s = [];
@@ -49,6 +51,11 @@
           ]
         }
         Plotly.extendTraces('graph', update, [0, 1, 2])
+        // Also, update big number split time
+        var splitseconds = Math.round(Number(data["split500"]), 0);
+        document.getElementById("splitheading").innerHTML =
+          Math.floor(splitseconds/60).toString() + "m " +
+          (splitseconds % 60).toString() + "s";
       });
     }
 

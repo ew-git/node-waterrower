@@ -39,6 +39,10 @@ exports.readDistance = function(callback) { //TODO: async callback with (err, va
 return values["DISTANCE"];
 }
 
+exports.readDistanceDec = function(callback) { //TODO: async callback with (err, value) arguments
+return values["DISTANCE_DEC"];
+}
+
 exports.readTotalDistance = function(callback) { //TODO: async callback with (err, value) arguments
 return values["TOTAL_DIST"];
 }
@@ -219,7 +223,8 @@ var wr5 ={
   "IDS1A9":{"response":"STROKE_RATE","next":"IRD148"},
 	"IDD148":{"response":"TOTAL_SPEED","next":"IRD14A"},
 	"IDD14A":{"response":"AVERAGE_SPEED","next":"IRD057"},
-	"IDD057":{"response":"DISTANCE","next":"IRD081"},
+	"IDD057":{"response":"DISTANCE","next":"IRS054"},
+	"IDS054":{"response":"DISTANCE_DEC","next":"IRD081"},
   "IDD081":{"response":"TOTAL_DIST","next":"IRS1A0"},
 	"IDS1A0":{"response":"HEARTRATE","next":"IRD140"},
 	"AKR":{"response":"RESET","next":"IRD140"}
@@ -230,6 +235,7 @@ values["STROKE_RATE"] = 0;
 values["TOTAL_SPEED"] = 0;
 values["AVERAGE_SPEED"] = 0;
 values["DISTANCE"] = 0;
+values["DISTANCE_DEC"] = 0;
 values["TOTAL_DIST"] = 0;
 values["HEARTRATE"] = 0;
 
