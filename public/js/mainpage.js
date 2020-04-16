@@ -1,25 +1,3 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-</head>
-
-<body>
-  <h1 id="splitheading">0m 0s</h1>
-  <button id="startbtn">START tracking</button>
-  <button id="savebtn">SAVE current view</button>
-
-  <div id="graph"></div>
-
-  <form>
-    <input type="text" id="sessionid">
-  </form>
-  <button id="sessionbtn">LOAD session</button>
-  <button id="listbtn">LIST sessions</button>
-  <p id="listofsessions">No sessions loaded</p>
-
-  <script>
 document.getElementById("splitheading").style.fontSize = "600%";
 
     var distances = [];
@@ -248,7 +226,3 @@ document.getElementById("splitheading").style.fontSize = "600%";
     var data = [trace1, trace2, trace3];
 
     Plotly.plot('graph', data, layout);
-  </script>
-</body>
-
-</html>

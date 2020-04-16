@@ -1,13 +1,15 @@
-var waterrower = require("./Waterrower");
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
-var express = require('express');
-var path = require('path');
-var app = express();
+const waterrower = require("./Waterrower");
+const http = require('http');
+const url = require('url');
+const fs = require('fs');
+const express = require('express');
+const path = require('path');
+const app = express();
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname + '/index.html'));
+    res.sendFile(path.join(__dirname + '/public/index.html'));
 });
 
 app.get('/data', function (req, res) {
