@@ -22,6 +22,6 @@ app.get('/data', function (req, res) {
     results.split500 = 500/results.speed;//split in seconds
   }
   res.send(results);
-})
-app.listen(3000, () => console.log('Express app listening on port 3000!'))
+});
+app.listen(3000, () => console.log('Express app listening on port 3000!'));
 console.log('Server running at http://127.0.0.1:3000/');
