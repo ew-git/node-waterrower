@@ -1,3 +1,4 @@
+(function(){
 document.getElementById("splitheading").style.fontSize = "600%";
 
 var distances = [];
@@ -7,6 +8,8 @@ var speeds = [];
 var timestamps = [];
 
 function getData() {
+  // Get data from the express server and append to the "global"
+  // arrays distances, strokes, etc.
   fetch("/data").then(function(response) {
     return response.json();
   }).then(function(data) {
@@ -35,8 +38,9 @@ function getData() {
       Math.floor(splitseconds / 60).toString() + "m " +
       (splitseconds % 60).toString() + "s";
   });
-}
+};
 
+// Save session button
 const savebtn = document.getElementById('savebtn');
 savebtn.onclick = saveCurrent;
 
@@ -63,8 +67,9 @@ function saveCurrent() {
     oldStoreParsed.push(currentData);
     localStorage.setItem('rowingStore', JSON.stringify(oldStoreParsed));
   }
-}
+};
 
+// List previous sessions button
 const listbtn = document.getElementById('listbtn');
 listbtn.onclick = listCurrent;
 
@@ -86,8 +91,9 @@ function listCurrent() {
     }
     oldStoreParsed.forEach(getids);
   }
-}
+};
 
+// Load a previous session with the id given in the form input box
 const sessionbtn = document.getElementById('sessionbtn');
 sessionbtn.onclick = loadSession;
 
@@ -134,8 +140,9 @@ function loadSession() {
       console.log('Session id not found.');
     }
   }
-}
+};
 
+// Start button that begins "tracking", i.e. append to global arrays and plots
 const startbtn = document.getElementById('startbtn');
 startbtn.onclick = tracking;
 startbtn.style.backgroundColor = '#1ae028';
@@ -153,10 +160,10 @@ function tracking() {
     startbtn.innerHTML = "START tracking";
     startbtn.style.backgroundColor = '#1ae028';
   }
-}
+};
 
 //https://plot.ly/javascript/streaming/#streaming-subplots
-var trace1 = {
+var trace_distance = {
   name: 'Distance (m)',
   x: [],
   y: [],
@@ -167,7 +174,7 @@ var trace1 = {
   }
 };
 
-var trace2 = {
+var trace_strokerate = {
   name: 'Stroke Rate (spm)',
   x: [],
   y: [],
@@ -179,7 +186,7 @@ var trace2 = {
   }
 };
 
-var trace3 = {
+var trace_500msplit = {
   name: '500m Split (s)',
   x: [],
   y: [],
@@ -229,6 +236,7 @@ var layout = {
   },
 };
 
-var data = [trace1, trace2, trace3];
+var data = [trace_distance, trace_strokerate, trace_500msplit];
 
 Plotly.plot('graph', data, layout);
+})();
