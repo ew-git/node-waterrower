@@ -12,7 +12,7 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-app.get('/test', function (req, res) {
+app.get('/data', function (req, res) {
   var results = {"distance": Number(waterrower.readTotalDistance()),
 		 "stroke": Number(waterrower.readStrokeRate()),
      "speed": Number(waterrower.readAverageSpeed())/100};//convert to m/s

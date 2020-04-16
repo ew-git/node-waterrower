@@ -29,7 +29,7 @@ document.getElementById("splitheading").style.fontSize = "600%";
     var timestamps = [];
 
     function runTest() {
-      fetch("/test").then(function(response) {
+      fetch("/data").then(function(response) {
         return response.json();
       }).then(function(data) {
         distances.push(Number(data["distance"]));
