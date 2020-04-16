@@ -28,7 +28,7 @@ document.getElementById("splitheading").style.fontSize = "600%";
     var speeds = [];
     var timestamps = [];
 
-    function runTest() {
+    function getData() {
       fetch("/data").then(function(response) {
         return response.json();
       }).then(function(data) {
@@ -160,7 +160,7 @@ document.getElementById("splitheading").style.fontSize = "600%";
 
     function tracking() {
       if (!tracked) {
-        tracked = window.setInterval(runTest, 300);
+        tracked = window.setInterval(getData, 300);
         startbtn.innerHTML = "STOP tracking";
         startbtn.style.backgroundColor = '#fc1134';
       } else {
