@@ -40,22 +40,32 @@ function getData() {
   });
 };
 
+// Set up indexedDB to store sessions
+if (!window.indexedDB) {
+    console.log("Your browser doesn't support a stable version of IndexedDB."+
+    " You will not be able to save or load sessions.");
+} else {
+  var db;
+  var reqdb = window.indexedDB.open("RowingStore", 1);
+  reqdb.onerror = function(event) {
+    console.log("Error opening IndexedDB.");
+  };
+  reqdb.onupgradeneeded = function(event) {
+    var db = event.target.result;
+    var objectStore = db.createObjectStore("rowsessions", { keyPath: "id",
+    autoIncrement: true});
+    // Name of the person doing the rowing
+    objectStore.createIndex("person", "person", { unique: false });
+    objectStore.createIndex("date", "date", { unique: false });
+  };
+};
+
 // Save session button
 const savebtn = document.getElementById('savebtn');
 savebtn.onclick = saveCurrent;
 
 function saveCurrent() {
-  var d = new Date().getTime();
-  var currentData = {
-    'id': d.toString(),
-    'data': {
-      'time': timestamps,
-      'distance': distances,
-      'strokerate': strokes,
-      'split500': split500s,
-      'speed': speeds
-    }
-  };
+  // var d = new Date().getTime(); // May use this later?
   var reqdb = window.indexedDB.open("RowingStore", 1);
   reqdb.onerror = function(event) {
     console.log("Error opening IndexedDB.");
@@ -64,69 +74,25 @@ function saveCurrent() {
     db = event.target.result;
     var tx = db.transaction(["rowsessions"], "readwrite");
     tx.oncomplete = function(event) {
-      console.log("Transaction complete.");
+      console.log("Save transaction complete.");
     };
     tx.onerror = function(event) {
-      console.err("Transaction error: " + event.target.errorCode);
+      console.err("Save transaction error: " + event.target.errorCode);
     };
     var objectStore = tx.objectStore("rowsessions");
-    objectStore.add({person: "Bob", date: new Date(), meters: 2123,
-                     description: "Test session description within save",
-                     oldstyledata: currentData
+    let totaldistance = (distances.length > 0 ? distances.slice(-1)[0] : 0);
+    objectStore.add({person: "Bob",
+                     date: new Date(),
+                     totaldistance: totaldistance,
+                     description: "Test session description",
+                     time_arr: timestamps,
+                     distance_arr: distances,
+                     strokerate_arr: strokes,
+                     split500_arr: split500s,
+                     speed_arr: speeds
                    });
   };
-
-  var oldStore = localStorage.getItem('rowingStore');
-  if (oldStore === null) {
-    //Create for the first time
-    var rowingStore = [currentData];
-    localStorage.setItem('rowingStore', JSON.stringify(rowingStore));
-  } else {
-    //Append to new data
-    var oldStoreParsed = JSON.parse(oldStore);
-    oldStoreParsed.push(currentData);
-    localStorage.setItem('rowingStore', JSON.stringify(oldStoreParsed));
-  }
 };
-
-if (!window.indexedDB) {
-    console.log("Your browser doesn't support a stable version of IndexedDB."+
-    " You will not be able to save or load sessions.");
-}
-
-var db;
-var reqdb = window.indexedDB.open("RowingStore", 1);
-reqdb.onerror = function(event) {
-  console.log("Error opening IndexedDB.");
-};
-reqdb.onsuccess = function(event) {
-  db = event.target.result;
-  console.log("reqdb.success");
-  var tx = db.transaction(["rowsessions"], "readwrite");
-  tx.oncomplete = function(event) {
-    console.log("Transaction complete.");
-  };
-  tx.onerror = function(event) {
-    console.err("Transaction error: " + event.target.errorCode);
-  };
-  var objectStore = tx.objectStore("rowsessions");
-  objectStore.add({person: "Alice", date: new Date(), meters: 2123,
-                   description: "Test session description"});
-};
-reqdb.onupgradeneeded = function(event) {
-  var db = event.target.result;
-
-  var objectStore = db.createObjectStore("rowsessions", { keyPath: "id",
-  autoIncrement: true});
-
-  // Name of the person doing the rowing
-  objectStore.createIndex("person", "person", { unique: false });
-  objectStore.createIndex("date", "date", { unique: false });
-};
-console.log(reqdb.toString())
-
-
-
 
 // List previous sessions button
 const listbtn = document.getElementById('listbtn');
