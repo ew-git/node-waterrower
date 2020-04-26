@@ -40,6 +40,38 @@ function getData() {
   });
 };
 
+var db2;
+function openDb() {
+  console.log("openDb ...");
+  var req = indexedDB.open("RowingStore", 1);
+  req.onsuccess = function (evt) {
+    // Equal to: db = req.result;
+    db2 = this.result;
+    console.log("openDb DONE");
+  };
+  req.onerror = function (evt) {
+    console.error("openDb:", evt.target.errorCode);
+  };
+
+  // req.onupgradeneeded = function (evt) {
+  //   console.log("openDb.onupgradeneeded");
+  //   var store = evt.currentTarget.result.createObjectStore(
+  //     DB_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+  //
+  //   store.createIndex('biblioid', 'biblioid', { unique: true });
+  //   store.createIndex('title', 'title', { unique: false });
+  //   store.createIndex('year', 'year', { unique: false });
+  // };
+}
+
+openDb();
+
+function getObjectStore(store_name, mode) {
+  var tx = db2.transaction(store_name, mode);
+  return tx.objectStore(store_name);
+}
+
+
 // Set up indexedDB to store sessions
 if (!window.indexedDB) {
     console.log("Your browser doesn't support a stable version of IndexedDB."+
@@ -99,72 +131,128 @@ const listbtn = document.getElementById('listbtn');
 listbtn.onclick = listCurrent;
 
 function listCurrent() {
-  var oldStore = localStorage.getItem('rowingStore');
-  if (oldStore === null) {
-    document.getElementById('listofsessions').innerHTML('No stored sessions.');
-  } else {
-    var oldStoreParsed = JSON.parse(oldStore);
-    document.getElementById('listofsessions').innerHTML = '';
+  console.log("displayPubList");
+  var store = getObjectStore("rowsessions", 'readonly');
 
-    function getids(item, index) {
-      var date = new Date(Number(item.id));
-      document.getElementById('listofsessions').innerHTML += item.id + ", ";
-      document.getElementById('listofsessions').innerHTML += date.toString() + ", ";
-      document.getElementById('listofsessions').innerHTML +=
-        item.data.distance[item.data.distance.length - 1] + ' meters';
-      document.getElementById('listofsessions').innerHTML += "<br/>";
+  var pub_msg = document.getElementById('pub-msg');
+  pub_msg.innerHTML = "";
+  var pub_list = document.getElementById('pub-list');
+  pub_list.innerHTML = "";
+  var session_table = document.getElementById('session-table');
+  session_table.innerHTML = "";
+
+  var req;
+  req = store.count();
+  req.onsuccess = function(evt) {
+    pub_msg.innerHTML = '<p>There are <strong>' + evt.target.result +
+      '</strong> saved sessions.</p>';
+  };
+  req.onerror = function(evt) {
+    console.error("add error", this.error);
+  };
+
+  var i = 0;
+  req = store.openCursor();
+  req.onsuccess = function(evt) {
+    var cursor = evt.target.result;
+
+    // If the cursor is pointing at something, ask for the data
+    if (cursor) {
+      req = store.get(cursor.key);
+      req.onsuccess = function(evt) {
+        var value = evt.target.result;
+        var list_item = document.createElement("li");
+        list_item.appendChild(document.createTextNode(
+          cursor.key + " " + value.person + " " + value.totaldistance + " " +
+          "meters " + value.date.toLocaleString() + " " + value.description
+        ));
+        pub_list.appendChild(list_item);
+        // Try with table
+        
+      };
+      cursor.continue();
+      // This counter serves only to create distinct ids
+      i++;
     }
-    oldStoreParsed.forEach(getids);
-  }
+  };
 };
-
 // Load a previous session with the id given in the form input box
 const sessionbtn = document.getElementById('sessionbtn');
 sessionbtn.onclick = loadSession;
 
 function loadSession() {
-  var sessionid = document.getElementById('sessionid').value;
+  var sessionid = parseInt(document.getElementById('sessionid').value);
   console.log('Loading session: ', sessionid);
-  var oldStore = localStorage.getItem('rowingStore');
-  if (oldStore === null) {
-    console.log('No stored sessions.');
-  } else {
-    var oldStoreParsed = JSON.parse(oldStore);
-    var i;
-    var found = false;
-    for (i = 0; i < oldStoreParsed.length; i++) {
-      if (oldStoreParsed[i].id.toString() == sessionid) {
-        found = true;
-        //set all the global arrays
-        distances = oldStoreParsed[i].data.distance;
-        strokes = oldStoreParsed[i].data.strokerate;
-        split500s = oldStoreParsed[i].data.split500;
-        speeds = oldStoreParsed[i].data.speed;
-        timestamps = oldStoreParsed[i].data.time; //actually strings
-        function stringtotime(item, index, arr) {
-          arr[index] = new Date(Date.parse(item));
-        }
-        timestamps.forEach(stringtotime);
-        //update subplots
-        var update = {
-          x: [
-            timestamps,
-            timestamps,
-            timestamps
-          ],
-          y: [
-            distances,
-            strokes,
-            split500s
-          ]
-        }
-        Plotly.update('graph', update, {}, [0, 1, 2])
-      };
-    }
-    if (!found) {
-      console.log('Session id not found.');
-    }
-  }
+
+  var reqdb = window.indexedDB.open("RowingStore", 1);
+  reqdb.onerror = function(event) {
+    console.log("Error opening IndexedDB.");
+  };
+  reqdb.onsuccess = function(event) {
+    var db = event.target.result;
+    var tx = db.transaction(["rowsessions"], "readonly").objectStore("rowsessions").get(sessionid);
+    tx.onerror = function(event) {
+      console.err("Save transaction error: " + event.target.errorCode);
+    };
+    tx.onsuccess = function(event) {
+      console.log("Person for this sessionid is " + event.target.result.person);
+      console.log("The total distance is " + event.target.result.totaldistance);
+      console.log("The first timestamp is " + event.target.result.time_arr[0]);
+      // set all the global arrays
+      distances = event.target.result.distance_arr;
+      strokes = event.target.result.strokerate_arr;
+      split500s = event.target.result.split500_arr;
+      speeds = event.target.result.speed_arr;
+      timestamps = event.target.result.time_arr;
+      // update subplots
+      var update = {
+        x: [timestamps, timestamps, timestamps],
+        y: [distances, strokes, split500s]
+      }
+      Plotly.update('graph', update, {}, [0, 1, 2])
+    };
+  };
+  //
+  // var oldStore = localStorage.getItem('rowingStore');
+  // if (oldStore === null) {
+  //   console.log('No stored sessions.');
+  // } else {
+  //   var oldStoreParsed = JSON.parse(oldStore);
+  //   var i;
+  //   var found = false;
+  //   for (i = 0; i < oldStoreParsed.length; i++) {
+  //     if (oldStoreParsed[i].id.toString() == sessionid) {
+  //       found = true;
+  //       //set all the global arrays
+  //       distances = oldStoreParsed[i].data.distance;
+  //       strokes = oldStoreParsed[i].data.strokerate;
+  //       split500s = oldStoreParsed[i].data.split500;
+  //       speeds = oldStoreParsed[i].data.speed;
+  //       timestamps = oldStoreParsed[i].data.time; //actually strings
+  //       function stringtotime(item, index, arr) {
+  //         arr[index] = new Date(Date.parse(item));
+  //       }
+  //       timestamps.forEach(stringtotime);
+  //       //update subplots
+  //       var update = {
+  //         x: [
+  //           timestamps,
+  //           timestamps,
+  //           timestamps
+  //         ],
+  //         y: [
+  //           distances,
+  //           strokes,
+  //           split500s
+  //         ]
+  //       }
+  //       Plotly.update('graph', update, {}, [0, 1, 2])
+  //     };
+  //   }
+  //   if (!found) {
+  //     console.log('Session id not found.');
+  //   }
+  // }
 };
 
 // Start button that begins "tracking", i.e. append to global arrays and plots
