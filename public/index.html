@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Rowing Statistics</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    table {
+      border-spacing: 10px 0;
+    }
+
+    th {
+      border-bottom: 1px solid;
+    }
+  </style>
 </head>
 
 <body>
@@ -18,9 +28,10 @@
   <button id="savebtn">SAVE current view</button>
   <button id="sessionbtn">LOAD session</button>
   <button id="listbtn">LIST sessions</button>
-  <p id="listofsessions">No sessions loaded</p>
+  <!-- <p id="listofsessions">No sessions loaded</p> -->
   <div>
     <div id="pub-msg">
+      <p>Click LIST sessions to list saved sessions.</p>
     </div>
     <div id="pub-viewer">
     </div>
@@ -33,4 +44,5 @@
 <footer>
   <script src="js/mainpage.js"></script>
 </footer>
+
 </html>

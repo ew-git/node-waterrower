@@ -140,6 +140,12 @@ function listCurrent() {
   pub_list.innerHTML = "";
   var session_table = document.getElementById('session-table');
   session_table.innerHTML = "";
+  var heading_row = session_table.insertRow();
+  heading_row.insertCell().outerHTML = "<th>Key</th>";
+  heading_row.insertCell().outerHTML = "<th>Person</th>";
+  heading_row.insertCell().outerHTML = "<th>Distance (m)</th>";
+  heading_row.insertCell().outerHTML = "<th>Date/Time</th>";
+  heading_row.insertCell().outerHTML = "<th>Description</th>";
 
   var req;
   req = store.count();
@@ -161,14 +167,19 @@ function listCurrent() {
       req = store.get(cursor.key);
       req.onsuccess = function(evt) {
         var value = evt.target.result;
-        var list_item = document.createElement("li");
-        list_item.appendChild(document.createTextNode(
-          cursor.key + " " + value.person + " " + value.totaldistance + " " +
-          "meters " + value.date.toLocaleString() + " " + value.description
-        ));
-        pub_list.appendChild(list_item);
+        // var list_item = document.createElement("li");
+        // list_item.appendChild(document.createTextNode(
+        //   cursor.key + " " + value.person + " " + value.totaldistance + " " +
+        //   "meters " + value.date.toLocaleString() + " " + value.description
+        // ));
+        // pub_list.appendChild(list_item);
         // Try with table
-        
+        var row = session_table.insertRow();
+        row.insertCell().appendChild(document.createTextNode(cursor.key));
+        row.insertCell().appendChild(document.createTextNode(value.person));
+        row.insertCell().appendChild(document.createTextNode(value.totaldistance));
+        row.insertCell().appendChild(document.createTextNode(value.date.toLocaleString()));
+        row.insertCell().appendChild(document.createTextNode(value.description));
       };
       cursor.continue();
       // This counter serves only to create distinct ids
