@@ -6,12 +6,21 @@
   <title>Rowing Statistics</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
+    body {
+      background-color: #c5d4e2;
+      font-family: sans-serif;
+    }
+
     table {
       border-spacing: 10px 0;
     }
 
     th {
       border-bottom: 1px solid;
+    }
+
+    textarea {
+      font-family: sans-serif;
     }
   </style>
 </head>
@@ -23,19 +32,21 @@
   <div id="graph"></div>
 
   <form>
-    <input type="text" id="sessionid">
+    <input type="text" id="person" placeholder="Person">
+    </br>
+    <textarea rows="2" cols="40" id="description" placeholder="Description"></textarea>
   </form>
   <button id="savebtn">SAVE current view</button>
-  <button id="sessionbtn">LOAD session</button>
+  <!-- <button id="sessionbtn">LOAD session</button> -->
   <button id="listbtn">LIST sessions</button>
   <!-- <p id="listofsessions">No sessions loaded</p> -->
   <div>
-    <div id="pub-msg">
+    <div id="session-msg">
       <p>Click LIST sessions to list saved sessions.</p>
     </div>
-    <div id="pub-viewer">
+    <div id="session-viewer">
     </div>
-    <ul id="pub-list">
+    <ul id="session-list">
     </ul>
     <table id="session-table">
     </table>

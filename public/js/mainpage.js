@@ -97,7 +97,11 @@ const savebtn = document.getElementById('savebtn');
 savebtn.onclick = saveCurrent;
 
 function saveCurrent() {
+  var person = document.getElementById('person').value;
+  var descr = document.getElementById('description').value;
   // var d = new Date().getTime(); // May use this later?
+  // TODO: refactor this to use the already-loaded db2
+  // TODO: draw another row of the table if it's already loaded
   var reqdb = window.indexedDB.open("RowingStore", 1);
   reqdb.onerror = function(event) {
     console.log("Error opening IndexedDB.");
@@ -113,10 +117,10 @@ function saveCurrent() {
     };
     var objectStore = tx.objectStore("rowsessions");
     let totaldistance = (distances.length > 0 ? distances.slice(-1)[0] : 0);
-    objectStore.add({person: "Bob",
+    objectStore.add({person: person,
                      date: new Date(),
                      totaldistance: totaldistance,
-                     description: "Test session description",
+                     description: descr,
                      time_arr: timestamps,
                      distance_arr: distances,
                      strokerate_arr: strokes,
@@ -131,13 +135,12 @@ const listbtn = document.getElementById('listbtn');
 listbtn.onclick = listCurrent;
 
 function listCurrent() {
-  console.log("displayPubList");
   var store = getObjectStore("rowsessions", 'readonly');
 
-  var pub_msg = document.getElementById('pub-msg');
-  pub_msg.innerHTML = "";
-  var pub_list = document.getElementById('pub-list');
-  pub_list.innerHTML = "";
+  var session_msg = document.getElementById('session-msg');
+  session_msg.innerHTML = "";
+  var session_list = document.getElementById('session-list');
+  session_list.innerHTML = "";
   var session_table = document.getElementById('session-table');
   session_table.innerHTML = "";
   var heading_row = session_table.insertRow();
@@ -150,8 +153,8 @@ function listCurrent() {
   var req;
   req = store.count();
   req.onsuccess = function(evt) {
-    pub_msg.innerHTML = '<p>There are <strong>' + evt.target.result +
-      '</strong> saved sessions.</p>';
+    session_msg.innerHTML = '<p>There are <strong>' + evt.target.result +
+      '</strong> saved sessions. Press the button in the Key column to load.</p>';
   };
   req.onerror = function(evt) {
     console.error("add error", this.error);
@@ -167,15 +170,11 @@ function listCurrent() {
       req = store.get(cursor.key);
       req.onsuccess = function(evt) {
         var value = evt.target.result;
-        // var list_item = document.createElement("li");
-        // list_item.appendChild(document.createTextNode(
-        //   cursor.key + " " + value.person + " " + value.totaldistance + " " +
-        //   "meters " + value.date.toLocaleString() + " " + value.description
-        // ));
-        // pub_list.appendChild(list_item);
-        // Try with table
         var row = session_table.insertRow();
-        row.insertCell().appendChild(document.createTextNode(cursor.key));
+        var keybtn = document.createElement("BUTTON");
+        keybtn.innerHTML = cursor.key.toString();
+        keybtn.onclick = function(){loadSessionFromKey()};
+        var key = row.insertCell().appendChild(keybtn);
         row.insertCell().appendChild(document.createTextNode(value.person));
         row.insertCell().appendChild(document.createTextNode(value.totaldistance));
         row.insertCell().appendChild(document.createTextNode(value.date.toLocaleString()));
@@ -188,12 +187,17 @@ function listCurrent() {
   };
 };
 // Load a previous session with the id given in the form input box
-const sessionbtn = document.getElementById('sessionbtn');
-sessionbtn.onclick = loadSession;
+// const sessionbtn = document.getElementById('sessionbtn');
+// sessionbtn.onclick = function(){loadSession(parseInt(document.getElementById('sessionid').value))};
 
-function loadSession() {
-  var sessionid = parseInt(document.getElementById('sessionid').value);
-  console.log('Loading session: ', sessionid);
+function loadSessionFromKey(){
+  let key = parseInt(window.event.target.innerHTML);
+  loadSession(key);
+}
+
+function loadSession(id) {
+  var sessionid = id;
+  console.log('Loading session:', sessionid);
 
   var reqdb = window.indexedDB.open("RowingStore", 1);
   reqdb.onerror = function(event) {
@@ -206,9 +210,6 @@ function loadSession() {
       console.err("Save transaction error: " + event.target.errorCode);
     };
     tx.onsuccess = function(event) {
-      console.log("Person for this sessionid is " + event.target.result.person);
-      console.log("The total distance is " + event.target.result.totaldistance);
-      console.log("The first timestamp is " + event.target.result.time_arr[0]);
       // set all the global arrays
       distances = event.target.result.distance_arr;
       strokes = event.target.result.strokerate_arr;
@@ -223,47 +224,6 @@ function loadSession() {
       Plotly.update('graph', update, {}, [0, 1, 2])
     };
   };
-  //
-  // var oldStore = localStorage.getItem('rowingStore');
-  // if (oldStore === null) {
-  //   console.log('No stored sessions.');
-  // } else {
-  //   var oldStoreParsed = JSON.parse(oldStore);
-  //   var i;
-  //   var found = false;
-  //   for (i = 0; i < oldStoreParsed.length; i++) {
-  //     if (oldStoreParsed[i].id.toString() == sessionid) {
-  //       found = true;
-  //       //set all the global arrays
-  //       distances = oldStoreParsed[i].data.distance;
-  //       strokes = oldStoreParsed[i].data.strokerate;
-  //       split500s = oldStoreParsed[i].data.split500;
-  //       speeds = oldStoreParsed[i].data.speed;
-  //       timestamps = oldStoreParsed[i].data.time; //actually strings
-  //       function stringtotime(item, index, arr) {
-  //         arr[index] = new Date(Date.parse(item));
-  //       }
-  //       timestamps.forEach(stringtotime);
-  //       //update subplots
-  //       var update = {
-  //         x: [
-  //           timestamps,
-  //           timestamps,
-  //           timestamps
-  //         ],
-  //         y: [
-  //           distances,
-  //           strokes,
-  //           split500s
-  //         ]
-  //       }
-  //       Plotly.update('graph', update, {}, [0, 1, 2])
-  //     };
-  //   }
-  //   if (!found) {
-  //     console.log('Session id not found.');
-  //   }
-  // }
 };
 
 // Start button that begins "tracking", i.e. append to global arrays and plots
@@ -323,6 +283,8 @@ var trace_500msplit = {
 };
 
 var layout = {
+  plot_bgcolor: "#c5d4e2",
+  paper_bgcolor: "#c5d4e2",
   autosize: false,
   width: 1000,
   height: 800,
