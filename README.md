@@ -4,22 +4,11 @@ An interface to the Waterrower rowing machine. Connect the Waterrower display to
 
 The node module does its best to identify the port that the Waterrower is using, and this has always worked with the limited number of systems at our disposal. They are MAC OS/10, Raspbian, Ubunutu and Windows. See below for troubleshooting.
 
-Simple API currently exposes: Stroke Rate, Total Speed, Average Speed, Distance, Heart Rate. This example use will display the Waterrower values and update them every 2 seconds.
+This fork adds a basic frontend displaying 500m split time, plots by plotly.js, and the ability to save and load sessions.
 
+![](https://user-images.githubusercontent.com/38871370/80440457-d3710600-88d6-11ea-8ab1-a738a021ecb6.png)
 
-```
-var waterrower = require("./Waterrower");
-
-var readWaterrower = function() {
-  console.log();
-  console.log("Stroke Count ....." + waterrower.readStrokeCount());  // [ - ]
-  console.log("Total Speed ....." + waterrower.readTotalSpeed());   // [cm/s]
-  console.log("Average Speed ..." + waterrower.readAverageSpeed()); // [cm/s]
-  console.log("Distance... ....." + waterrower.readDistance());     // [ m ]
-  console.log("Heart Rate ......" + waterrower.readHeartRate());    // [ bpm ]
-
-}
-```
+![](https://user-images.githubusercontent.com/38871370/80440535-f7344c00-88d6-11ea-9e00-3b76508cd8e4.png)
 
 Troubleshooting
 ---------------
@@ -61,7 +50,7 @@ sudo reboot
 ```
 Verify the user is added with `id -Gn`.
 
-The following `/dev/` devices are searched for the following strings:
+The `/dev/` devices are searched for the following strings:
 ```
 ttyACM
 cu.usbserial
