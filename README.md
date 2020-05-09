@@ -10,6 +10,13 @@ This fork adds a basic frontend displaying 500m split time, plots by plotly.js, 
 
 ![](https://user-images.githubusercontent.com/38871370/80440535-f7344c00-88d6-11ea-9e00-3b76508cd8e4.png)
 
+Installation
+---------------
+Requires [Node.js](https://nodejs.org/en/). Navigate to the project folder and run `npm install`. Then, start the local server with `node server.js`. Open http://127.0.0.1:3000/ (default) in your browser.
+
+Saving and loading sessions is handled with IndexedDB, so clearing your browser data will destroy saved sessions.
+
+
 Troubleshooting
 ---------------
 In the Waterrower module index.js file change debug to true. Restarting your program will show the ports that have been found. For example, on a MAC :
